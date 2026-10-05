@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}{{ venue_name }} — Bar Deals{% endblock %}
+
+{% block content %}
+<header class="head">
+  <p class="back"><a href="{{ url_for('index') }}">← All places</a></p>
+  <h1 class="head-title">{{ venue_name }}</h1>
+  <p class="head-sub">
+    {% if website_url %}<a href="{{ website_url }}" target="_blank" rel="noopener noreferrer">Official website ↗</a><span class="dot">·</span>{% endif %}
+    {% if instagram_url %}<a href="{{ instagram_url }}" target="_blank" rel="noopener noreferrer">@{{ venue_slug }} ↗</a><span class="dot">·</span>{% endif %}
+    {{ total }} deal{{ '' if total == 1 else 's' }} on record
+    {% if address %}
+      <br>
+      <a href="https://www.google.com/maps/search/?api=1&query={{ (address ~ ', Cincinnati, OH')|urlencode }}"
+         target="_blank" rel="noopener noreferrer">{{ address }} ↗</a>
+    {% endif %}
+  </p>
+</header>
+
+{% if has_samples %}
+  <p class="banner banner--sample"><strong>Sample deals included.</strong> These illustrate the app; they are not verified offers. Check this place’s current offers before you go.</p>
+{% endif %}
+
+{% if freshness.stale %}
+  <p class="banner banner--warn">{% if freshness.known %}Last updated <strong>{{ freshness.label }}</strong> — these prices may be out of date.{% else %}No specials have been collected yet. Check back after the next update.{% endif %}</p>
+{% endif %}
+
+{% if total %}
+  <h2 class="section-head">Weekly specials</h2>
+  <div class="weekgrid">
+    {% for row in by_weekday %}
+      <section class="weekday{% if row.is_today %} weekday--today{% endif %}">
+        <h3 class="weekday-name">
+          {{ row.name }}{% if row.is_today %} <span class="badge badge--live">today</span>{% endif %}
+        </h3>
+        {% if row.deals %}
+          <ul class="weekday-deals">
+            {% for deal in row.deals %}
+              <li>
+                {% if deal.price_label %}<span class="wprice">{{ deal.price_label }}</span>{% endif %}
+                <span class="wtext">{{ deal.deal_text }}</span>
+                {% if deal.window %}<span class="muted small">{{ deal.window }}</span>{% endif %}
+                {% if deal.confidence == 'low' %}<span class="chip chip--warn">unconfirmed</span>{% endif %}
+                {% if deal.verify.kind == 'sample' %}<span class="chip chip--sample">sample</span>{% endif %}
+                {% if deal.verify.url %}
+              <a class="verify small" href="{{ deal.verify.url }}" title="{{ deal.verify.title }}"
+                 target="_blank" rel="noopener noreferrer" aria-label="Check source for {{ deal.deal_text }}">↗</a>
+            {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted small">nothing on record</p>
+        {% endif %}
+      </section>
+    {% endfor %}
+  </div>
+
+  {% if other %}
+    <h2 class="section-head">Daily, one-off &amp; undated</h2>
+    <ul class="deals">
+      {% for deal in other %}
+        <li class="deal{% if deal.confidence == 'low' %} deal--dim{% endif %}">
+          <div class="deal-price">
+            {% if deal.price_label %}{{ deal.price_label }}{% else %}<span class="deal-price-na">deal</span>{% endif %}
+          </div>
+          <div class="deal-body">
+            <p class="deal-text">{{ deal.deal_text }}</p>
+            <p class="deal-meta">
+              <span class="muted">{{ deal.when }}</span>
+              {% if deal.window %}<span class="dot">·</span><span class="deal-time">{{ deal.window }}</span>{% endif %}
+            </p>
+            <p class="deal-foot">
+              <span class="chip">{{ deal.source_label }}</span>
+              {% if deal.confidence == 'low' %}<span class="chip chip--warn">unconfirmed</span>{% endif %}
+              {% if deal.verify.kind == 'sample' %}<span class="chip chip--sample">sample</span>{% endif %}
+              {% if deal.verify.url %}
+                <a class="verify" href="{{ deal.verify.url }}" title="{{ deal.verify.title }}"
+                   target="_blank" rel="noopener noreferrer">{{ deal.verify.label }}</a>
+              {% else %}
+                <span class="verify verify--none">{{ deal.verify.label }}</span>
+              {% endif %}
+            </p>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% else %}
+  <div class="empty">
+    <p class="empty-title">Nothing on record for this place yet.</p>
+    <p class="muted">No specials have been collected for this place. Check its official pages for current offers.</p>
+  </div>
+{% endif %}
+{% endblock %}

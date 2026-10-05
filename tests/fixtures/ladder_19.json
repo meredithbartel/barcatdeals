@@ -1,0 +1,41 @@
+{
+  "username": "ladder_19",
+  "saved_at": "2026-09-09T21:27:19.585005+00:00",
+  "synthetic": true,
+  "note": "Hand-authored fixture; not captured from Instagram.",
+  "posts": [
+    {
+      "shortcode": "FIXLADDER01",
+      "username": "ladder_19",
+      "caption": "TONIGHT 🔥",
+      "posted_at": "2026-09-16T22:30:00+00:00",
+      "image_url": "https://example.invalid/FIXLADDER01.jpg",
+      "local_image_path": "C:\\Users\\mered\\Downloads\\Barcat deals\\tests\\fixtures\\images\\FIXLADDER01.jpg",
+      "permalink": "https://www.instagram.com/p/FIXLADDER01/",
+      "is_video": false,
+      "typename": "GraphImage"
+    },
+    {
+      "shortcode": "FIXLADDER02",
+      "username": "ladder_19",
+      "caption": "same deal as always this week",
+      "posted_at": "2026-09-15T22:30:00+00:00",
+      "image_url": "https://example.invalid/FIXLADDER02.jpg",
+      "local_image_path": null,
+      "permalink": "https://www.instagram.com/p/FIXLADDER02/",
+      "is_video": false,
+      "typename": "GraphImage"
+    },
+    {
+      "shortcode": "FIXLADDER03",
+      "username": "ladder_19",
+      "caption": "Great crowd for the game last night 🏈",
+      "posted_at": "2026-09-13T22:30:00+00:00",
+      "image_url": "https://example.invalid/FIXLADDER03.jpg",
+      "local_image_path": null,
+      "permalink": "https://www.instagram.com/p/FIXLADDER03/",
+      "is_video": false,
+      "typename": "GraphSidecar"
+    }
+  ]
+}

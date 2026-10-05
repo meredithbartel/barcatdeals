@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bardeals"
+version = "0.1.0"
+description = "Track drink/food deals posted by Cincinnati-area bars on Instagram"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "instaloader>=4.12",
+    "anthropic>=0.39",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0",
+    "click>=8.1",
+    "rich>=13.7",
+    # Windows and slim server images may lack a system IANA tz database;
+    # zoneinfo needs this to resolve America/New_York at all.
+    "tzdata>=2024.1",
+    # Website scraping: HTML text extraction and menu PDFs.
+    "beautifulsoup4>=4.12",
+    "pypdf>=4.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "freezegun>=1.4", "pillow>=10.0", "flask>=3.0"]
+web = ["flask>=3.0"]  # pillow: generates synthetic flyer fixtures
+deploy = ["flask>=3.0", "gunicorn>=22.0"]  # production server (Render)
+
+[project.scripts]
+bardeals = "bardeals.cli:cli"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+bardeals = ["templates/*.html", "static/*.css", "static/*.js", "static/vendor/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

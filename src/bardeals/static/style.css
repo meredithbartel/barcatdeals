@@ -1,0 +1,635 @@
+/* Shared foundations for the neighborhood guide and weekly schedules. */
+
+:root {
+  color-scheme: light;
+  --bg:        #f7f5ed;
+  --bg-raised: #fffef9;
+  --bg-sunken: #f0eee4;
+  --line:      #dedfd1;
+  --text:      #203b2d;
+  --text-dim:  #65705e;
+  --text-faint:#67725d;
+  --accent:    #d1ddae;
+  --accent-ink:#243c25;
+  --accent-soft:#e8edda;
+  --live:      #42633b;
+  --warn:      #8b5c32;
+  --link:      #304f38;
+  --radius:    12px;
+}
+
+* { box-sizing: border-box; }
+.show-on-map { display: none; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 34px 28px 48px;
+}
+
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+code {
+  background: var(--bg-sunken);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 1px 5px;
+  font-size: .88em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.muted  { color: var(--text-dim); }
+.small  { font-size: 1rem; }
+.accent { color: var(--accent); }
+.live   { color: var(--live); }
+.dot    { color: var(--text-faint); margin: 0 .45em; }
+
+/* ---------------------------------------------------------------- header */
+
+.head { margin-bottom: 18px; }
+
+.head-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+
+.head-sub {
+  margin: 2px 0 0;
+  color: var(--text-dim);
+  font-size: .95rem;
+}
+
+.head-stat {
+  margin: 10px 0 0;
+  font-size: .95rem;
+  color: var(--text-dim);
+}
+.head-stat strong { color: var(--text); font-weight: 600; }
+
+.back { margin: 0 0 10px; font-size: .9rem; }
+
+/* -------------------------------------------------------------- daystrip */
+
+.daystrip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 16px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.daystrip::-webkit-scrollbar { display: none; }
+
+.daychip {
+  flex: 0 0 auto;
+  min-width: 62px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.25;
+}
+.daychip:hover { text-decoration: none; border-color: var(--text-faint); }
+
+.daychip--on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #14171c;
+}
+.daychip--on .daychip-sub { color: #14171c; opacity: .72; }
+
+.daychip-label { display: block; font-weight: 600; font-size: .9rem; color: inherit; }
+.daychip-sub   { display: block; font-size: 0.9375rem; color: var(--text-faint); }
+
+/* --------------------------------------------------------------- banners */
+
+.banner {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: .9rem;
+  border: 1px solid;
+}
+.banner--warn {
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+  border-color: color-mix(in srgb, var(--warn) 40%, transparent);
+  color: var(--text);
+}
+
+/* --------------------------------------------------------------- sortbar */
+
+.sortbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.sortbar-label {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-faint);
+  margin-right: 2px;
+}
+
+.tab {
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-raised);
+  color: var(--text-dim);
+  font-size: 1rem;
+}
+.tab:hover { text-decoration: none; border-color: var(--text-faint); }
+.tab--on {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+/* ----------------------------------------------------------------- deals */
+
+.deals { list-style: none; margin: 0 0 24px; padding: 0; }
+
+.deal {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px;
+  margin-bottom: 10px;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.deal--live { border-color: color-mix(in srgb, var(--live) 45%, var(--line)); }
+
+.deal--dim { background: var(--bg-sunken); }
+.deal--dim .deal-price { color: var(--text-dim); }
+
+.deal-price {
+  flex: 0 0 auto;
+  min-width: 62px;
+  font-size: 1.32rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -.02em;
+  padding-top: 1px;
+}
+.deal-price-na {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.deal-body { min-width: 0; flex: 1; }
+
+.deal-text {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.deal-meta {
+  margin: 3px 0 0;
+  font-size: .9rem;
+  color: var(--text-dim);
+}
+.deal-venue { font-weight: 500; }
+.deal-time { color: var(--text-dim); }
+
+.deal-foot {
+  margin: 8px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 1rem;
+}
+
+.chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--line);
+  color: var(--text-faint);
+  font-size: 0.9375rem;
+}
+.chip--web  { color: var(--link); border-color: color-mix(in srgb, var(--link) 35%, transparent); }
+.chip--warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 35%, transparent); }
+
+.badge {
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.badge--live { background: var(--live); color: #06210f; }
+
+.verify { margin-left: auto; color: var(--text-dim); font-size: 1rem; }
+
+/* ----------------------------------------------------------- venue block */
+
+.venue-block { margin-bottom: 22px; }
+
+.venue-head {
+  margin: 0 0 8px;
+  font-size: 1.02rem;
+  font-weight: 600;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.venue-head a { color: var(--text); }
+.venue-from { font-size: 1rem; color: var(--accent); font-weight: 500; }
+
+.section-head {
+  margin: 26px 0 12px;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-faint);
+  font-weight: 600;
+}
+
+/* -------------------------------------------------------------- weekgrid */
+
+.weekgrid { display: grid; gap: 8px; }
+
+.weekday {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+}
+.weekday--today { border-color: color-mix(in srgb, var(--live) 45%, var(--line)); }
+
+.weekday-name {
+  margin: 0 0 6px;
+  font-size: .92rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weekday-deals { list-style: none; margin: 0; padding: 0; }
+.weekday-deals li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0;
+  flex-wrap: wrap;
+}
+.wprice { color: var(--accent); font-weight: 700; min-width: 44px; }
+.wtext  { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+
+/* ----------------------------------------------------------------- aside */
+
+.aside {
+  margin: 26px 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.aside-head {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-faint);
+  font-weight: 600;
+}
+.aside-note { margin: 0 0 10px; font-size: 1rem; color: var(--text-faint); }
+
+.quiet { margin: 0; font-size: 1rem; line-height: 1.9; }
+.quiet a { color: var(--text-dim); }
+
+/* ----------------------------------------------------------------- empty */
+
+.empty {
+  padding: 28px 18px;
+  text-align: center;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 22px;
+}
+.empty-title { margin: 0 0 6px; font-size: 1.05rem; font-weight: 600; }
+.empty p:last-child { margin-bottom: 0; }
+
+/* ---------------------------------------------------------------- footer */
+
+.footer {
+  margin-top: 34px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.foot-row { display: flex; gap: 16px; font-size: 1rem; margin-bottom: 8px; }
+.footer p { margin: 0; }
+
+.updated { margin-top: 20px; text-align: center; }
+
+/* ------------------------------------------------------------ wider view */
+
+@media (min-width: 620px) {
+  .wrap { padding-top: 32px; }
+  .head-title { font-size: 2.4rem; }
+  .weekgrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ================================================================ filters */
+
+.filters { margin: 0 0 10px; }
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.filter-row--chips { gap: 6px; }
+
+.filter-label {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-faint);
+  min-width: 42px;
+}
+
+.search {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  font-size: 1rem;               /* 16px stops iOS zooming on focus */
+  color: var(--text);
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.search::placeholder { color: var(--text-faint); }
+.search:focus {
+  outline: 2px solid color-mix(in srgb, var(--link) 55%, transparent);
+  outline-offset: 1px;
+  border-color: var(--link);
+}
+
+.btn {
+  padding: 9px 14px;
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--bg);
+  background: var(--text);
+  border: 1px solid var(--text);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.pill {
+  padding: 5px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-raised);
+  color: var(--text-dim);
+  font-size: 1rem;
+  line-height: 1.3;
+}
+.pill:hover { text-decoration: none; border-color: var(--text-faint); }
+.pill--on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #14171c;
+  font-weight: 600;
+}
+
+.filter-clear { margin: 2px 0 14px; font-size: 1rem; }
+
+/* ============================================================ time groups */
+
+.timegroup { margin-bottom: 22px; }
+
+.timegroup-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-dim);
+}
+.timegroup--now  .timegroup-head { color: var(--live); }
+.timegroup--over .timegroup-head { color: var(--text-faint); }
+
+.timegroup-count {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--line);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--text-dim);
+}
+
+.deal--over { background: var(--bg-sunken); }
+
+.badge--now   { background: var(--live); color: #06210f; }
+.badge--later { background: var(--bg-sunken); border: 1px solid var(--line); color: var(--text-dim); }
+.badge--over  { background: transparent; border: 1px solid var(--line); color: var(--text-faint); }
+
+.deal-addr { color: var(--text-faint); font-size: 1rem; }
+
+.daychip--wide { min-width: 74px; }
+
+/* ============================================================= week view */
+
+.weekday-date { font-size: 1rem; color: var(--text-faint); font-weight: 400; }
+.weekday-from { margin-left: auto; font-size: 1rem; color: var(--accent); font-weight: 600; }
+.weekday-name a { color: var(--text); }
+.weekday { margin-bottom: 10px; }
+
+.wprice--na { color: var(--text-faint); }
+.wvenue { font-size: 1rem; color: var(--text-dim); }
+
+@media (min-width: 620px) {
+  /* The week view reads better as one column: each day is a full row. */
+  .weekgrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* A source we know cannot be opened is shown as plain text, never a link. */
+.verify--none { color: var(--text-faint); cursor: default; }
+.chip--sample {
+  color: var(--warn);
+  border-color: color-mix(in srgb, var(--warn) 35%, transparent);
+}
+
+/* Shared navigation and a clear local identity. All assets stay on-device. */
+:focus-visible { outline: 3px solid var(--live); outline-offset: 4px; }
+.skip-link { position: fixed; top: -100px; left: 16px; z-index: 5; padding: 12px 18px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); }
+.skip-link:focus { top: 12px; }
+.site-header { border-bottom: 1px solid var(--line); }
+.site-header-inner { max-width: 1120px; margin: auto; padding: 16px 28px; display: flex; align-items: center; gap: 30px; }
+.brand { display: inline-flex; align-items: center; color: var(--text); font-size: 1.4rem; font-weight: 800; letter-spacing: -.06em; white-space: nowrap; }
+.brand:hover { text-decoration: none; }
+.brand-mark { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; margin-right: 10px; background: var(--accent); color: var(--accent-ink); font: italic 700 30px Georgia, serif; padding-bottom: 5px; }
+.brand-period { color: var(--live); }
+.location { color: var(--text-faint); font-size: 0.9375rem; letter-spacing: .04em; }
+.location span { padding: 0 6px; }
+.site-nav { display: flex; gap: 6px; margin-left: auto; }
+.site-nav a { padding: 11px 16px; color: var(--text-dim); border-radius: 9px; font-size: 1rem; font-weight: 600; white-space: nowrap; }
+.site-nav a[aria-current] { background: var(--bg-raised); color: var(--text); }
+.site-nav a:hover { background: var(--bg-sunken); text-decoration: none; }
+.head { margin-bottom: 28px; }
+.eyebrow { margin: 0 0 12px; color: var(--text-faint); font-size: 0.9375rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+.head-title { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 750; letter-spacing: -.055em; line-height: 1.15; overflow-wrap: anywhere; }
+.title-accent { font-family: Georgia, serif; font-weight: 400; font-style: italic; letter-spacing: -.045em; color: var(--live); }
+.head-sub { margin-top: 12px; font-size: 1rem; }
+.head-stat { margin-top: 20px; font-size: .92rem; }
+.head-stat .live { color: var(--live); }
+.head-stat .accent, .accent { color: var(--text); }
+.back { margin-bottom: 18px; }
+.daystrip { padding: 4px 3px 10px; margin: 0 -3px 20px; scrollbar-width: thin; }
+.daychip { flex: 1 0 80px; min-width: 80px; padding: 12px 10px; border-radius: 11px; background: transparent; }
+.daychip--on { background: var(--accent); color: var(--accent-ink); }
+.daychip--on .daychip-sub { color: var(--accent-ink); opacity: 1; }
+.daychip-label { font-size: 1rem; }
+.daychip-sub { margin-top: 4px; font-size: 0.9375rem; }
+.daychip--wide { background: var(--bg-raised); }
+.banner { margin-bottom: 22px; padding: 13px 17px; font-size: 1rem; line-height: 1.65; }
+.banner--warn { border: 1px solid var(--line); border-left: 3px solid var(--warn); background: var(--bg-raised); }
+.banner--sample { border: 1px solid var(--line); border-left: 3px solid var(--accent); background: var(--accent-soft); }
+
+/* Desktop filtering remains beside the list; phones keep one reading column. */
+.explore-layout { display: grid; grid-template-columns: 254px minmax(0, 1fr); gap: 36px; align-items: start; margin-top: 28px; }
+.discovery { position: sticky; top: 24px; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raised); }
+.discovery-title { font-size: 1rem; letter-spacing: -.02em; margin: 0 0 5px; }
+.discovery-sub { color: var(--text-faint); font-size: 1rem; margin: 0 0 20px; }
+.filters { margin-bottom: 20px; }
+.filter-row { gap: 7px; }
+.filter-row--chips { gap: 6px; margin-bottom: 22px; }
+.filter-label { flex-basis: 100%; margin-bottom: 5px; font-size: 0.875rem; font-weight: 700; }
+.search { min-height: 44px; background: var(--bg); border-radius: 8px; }
+.search::placeholder { font-size: 1rem; }
+.btn { min-height: 44px; border-radius: 8px; font-size: 1rem; }
+.discovery .search { flex-basis: 100%; }
+.discovery .btn { width: 100%; }
+.pill { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 13px; border-radius: 8px; font-size: 1rem; }
+.pill--on { color: var(--accent-ink); }
+.filter-clear { margin: 0 0 16px; font-size: 1rem; text-decoration: underline; text-underline-offset: 3px; }
+.filter-hint { font-size: 0.9375rem; color: var(--text-faint); margin: 0 0 16px; }
+.week-link { display: flex; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--line); font-size: 1rem; font-weight: 600; }
+.results { min-width: 0; }
+.results-toolbar { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 26px; }
+.results-title { margin: 0; font-size: 1.08rem; letter-spacing: -.02em; }
+.sortbar { gap: 2px; padding: 3px; margin: 0; border: 1px solid var(--line); border-radius: 10px; }
+.tab { display: inline-flex; align-items: center; min-height: 38px; padding: 7px 12px; border: 0; border-radius: 7px; font-size: 0.9375rem; background: transparent; }
+.tab--on { color: var(--text); background: var(--bg-raised); }
+
+/* A consistent scan order: price, offer, venue, then the original source. */
+.deals { display: grid; gap: 12px; }
+.deal { gap: 18px; padding: 20px; margin: 0; }
+.deal--live { border-color: var(--line); border-left: 3px solid var(--live); }
+.deal--dim .deal-text, .deal--over .deal-text { color: var(--text-dim); }
+.deal-price { flex: 0 0 76px; min-width: 0; padding: 12px 5px; border-radius: 10px; background: var(--accent-soft); color: var(--text); font-size: 1.55rem; text-align: center; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.deal-price-na { font-size: 0.875rem; }
+.deal-text { margin-bottom: 7px; font-size: 1.04rem; letter-spacing: -.015em; line-height: 1.4; }
+.deal-meta { font-size: 1rem; line-height: 1.65; }
+.deal-venue { font-weight: 600; }
+.deal-addr { display: block; width: fit-content; font-size: 0.9375rem; padding: 2px 0; }
+.deal-foot { gap: 6px; margin-top: 15px; }
+.chip { padding: 3px 7px; border-radius: 5px; font-size: 0.875rem; }
+.chip--category { color: var(--text-dim); }
+.verify { display: inline-flex; align-items: center; min-height: 32px; font-size: 0.9375rem; color: var(--link); overflow-wrap: anywhere; }
+.badge { display: inline-block; padding: 2px 7px; border-radius: 5px; font-size: 0.875rem; text-transform: none; letter-spacing: 0; }
+.badge--now, .badge--live { color: var(--live); background: var(--bg-sunken); border: 1px solid var(--line); }
+.timegroup { margin-bottom: 28px; }
+.timegroup-head { font-size: 0.9375rem; }
+.timegroup--now .timegroup-head::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--live); }
+.timegroup-count { border-radius: 5px; font-size: 0.875rem; }
+.venue-head { flex-wrap: wrap; }
+.venue-from, .weekday-from, .wprice { color: var(--text); }
+.weekgrid { gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.weekday { margin-bottom: 14px; padding: 20px; }
+.weekday-name { flex-wrap: wrap; margin-bottom: 12px; }
+.weekday--today { border-color: var(--line); border-left: 3px solid var(--live); }
+.weekday-deals li { gap: 8px 12px; padding: 12px 0; border-top: 1px solid var(--line); font-size: 1rem; }
+.wtext { min-width: 100px; }
+.wvenue { font-size: 1rem; }
+.aside-head { color: var(--text-dim); text-transform: none; letter-spacing: 0; }
+.aside-note { color: var(--text-dim); }
+.empty { padding: 40px 22px; }
+.empty .muted { font-size: 1rem; }
+.foot-row { justify-content: space-between; font-size: 1rem; }
+.footer p { max-width: 600px; font-size: 0.9375rem; }
+.updated { color: var(--text-faint); font-size: 0.9375rem; }
+
+@media (max-width: 800px) {
+  .location { display: none; }
+  .explore-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .discovery { position: static; padding: 18px; }
+  .discovery-title, .discovery-sub, .week-link { display: none; }
+  .discovery .search { flex-basis: auto; }
+  .discovery .btn { width: auto; }
+  .filters { margin-bottom: 14px; }
+  .filter-row--chips { margin-bottom: 12px; }
+  .filter-row--chips:last-of-type { margin-bottom: 0; }
+  .filter-clear, .filter-hint { margin: 12px 0 0; }
+}
+@media (max-width: 540px) {
+  .wrap { padding: 26px 16px 28px; }
+  .site-header-inner { padding: 12px 16px; gap: 8px; }
+  .brand { font-size: 1.2rem; }
+  .brand-mark { width: 30px; height: 30px; font-size: 25px; margin-right: 7px; border-radius: 8px; }
+  .site-nav { gap: 0; }
+  .site-nav a { padding: 11px 9px; font-size: 0.9375rem; }
+  .head-stat { font-size: 1rem; margin-top: 16px; line-height: 1.9; }
+  .head-sub { font-size: 1rem; }
+  .daychip { flex-basis: 74px; min-width: 74px; padding: 10px 8px; }
+  .banner { font-size: 1rem; padding: 11px 13px; margin-bottom: 16px; }
+  .explore-layout { margin-top: 18px; }
+  .discovery { padding: 14px; }
+  .pill { padding: 7px 10px; font-size: 0.9375rem; }
+  .results-title { font-size: .97rem; }
+  .tab { min-height: 40px; padding: 7px 9px; font-size: 0.9375rem; }
+  .deal { padding: 16px 12px; gap: 12px; }
+  .deal-price { flex-basis: 61px; font-size: 1.35rem; padding: 10px 3px; }
+  .deal-text { font-size: .97rem; }
+  .deal-meta { font-size: 0.9375rem; }
+  .deal-foot { gap: 5px; margin-top: 10px; }
+  .verify { min-height: 40px; }
+  .weekgrid { grid-template-columns: minmax(0, 1fr); }
+  .weekday { padding: 16px; }
+  .wvenue { flex-basis: 100%; }
+}
+@media (max-width: 360px) {
+  .brand-mark { display: none; }
+  .results-toolbar { align-items: flex-start; flex-direction: column; }
+  .head-title { font-size: 2rem; }
+}

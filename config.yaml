@@ -1,0 +1,309 @@
+# bardeals configuration
+# Everything tunable lives here. No venue or pacing value is hardcoded in Python.
+
+timezone: America/New_York
+
+llm:
+  model: claude-sonnet-4-5
+  max_tokens: 2048
+
+paths:
+  db: data/bardeals.db
+  images: data/images
+  reports: data/reports
+  log: data/bardeals.log
+  fixtures: tests/fixtures
+  pages: data/pages          # cached website HTML, for debugging extractions
+
+scrape:
+  # Posts pulled per account per run.
+  posts_per_account: 10
+  # Random sleep (seconds) between accounts.
+  sleep_between_accounts: [8, 15]
+  # Random sleep (seconds) between individual posts.
+  sleep_between_posts: [2, 5]
+  # Hard ceiling on Instagram requests per rolling hour.
+  max_requests_per_hour: 150
+  # Retries per account before giving up on it and moving on.
+  max_retries_per_account: 3
+  # Exponential backoff base (seconds): base * 2**attempt, plus jitter.
+  backoff_base_seconds: 30
+  # Save every successful live fetch into tests/fixtures/ for offline dev.
+  save_fixtures: true
+
+web:
+  # Website scraping. Unlike Instagram these are ordinary public pages that
+  # welcome visitors, so the pacing here is politeness rather than evasion.
+  enabled: true
+  # Obey robots.txt. Leave this on.
+  respect_robots: true
+  # Seconds to wait between requests to the SAME site.
+  delay_between_pages: [1.5, 3.0]
+  # Seconds between different sites.
+  delay_between_sites: [2.0, 5.0]
+  # Most pages fetched per site per run, including the homepage.
+  max_pages_per_site: 5
+  # Per-request timeout, seconds.
+  timeout: 20
+  # Identify honestly first. Some sites 403 anything that is not a browser, so
+  # on a 403 the fetch is retried once with the fallback below. Measured on the
+  # real sites: vaquerorestaurant.com refuses the bot UA, macspizzapub.com
+  # refuses the browser UA - neither alone is enough.
+  user_agent: "bardeals/0.1 (personal deal tracker)"
+  fallback_user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+  # Skip a page whose extracted text is longer than this many characters after
+  # cleaning; a page this big is a menu dump, not a specials page.
+  max_page_chars: 20000
+  # Text sent to the LLM is capped at this many characters (logged when it hits).
+  max_llm_chars: 8000
+  # Follow PDF links too: a lot of bars publish their menu and happy-hour
+  # sheet as a PDF rather than as a page.
+  follow_pdfs: true
+  # Most PDF pages to read text from.
+  max_pdf_pages: 8
+  # A link whose URL or anchor text contains one of these is worth following
+  # from the homepage. Ordered by how promising they are.
+  follow_keywords:
+    - happy-hour
+    - happyhour
+    - happy hour
+    - special
+    - deal
+    - drink
+    - menu
+    - events
+    - calendar
+  # Never follow links containing these.
+  skip_keywords:
+    - facebook.com
+    - instagram.com
+    - twitter.com
+    - x.com
+    - tiktok.com
+    - yelp.com
+    - doordash
+    - ubereats
+    - grubhub
+    - opentable
+    - toasttab
+    - /cart
+    - /checkout
+    - /account
+    - /login
+    - "mailto:"
+    - "tel:"
+    - .jpg
+    - .png
+    - .zip
+
+venues:
+  # `address` is optional and only filled in where it was actually verified;
+  # it drives the "where is this" line and the map link in the web UI.
+  # Coordinates are venue/building points from OpenStreetMap, checked 2026-09-09.
+  # Missing coordinates leave a venue in the list without inventing a map pin.
+  # `website` is optional. Leave it blank for venues that have no site of their
+  # own - several of these bars use a Facebook page as their web presence, and
+  # Facebook cannot be scraped (see the README).
+  - slug: murphyspubcincy
+    name: Murphy's Pub
+    address: 2329 W Clifton Ave
+    latitude: 39.1246422
+    longitude: -84.5200296
+    location_source: https://www.openstreetmap.org/way/60708325
+    website: https://murphys-pub.com/
+  - slug: ladder_19
+    name: Ladder 19
+    address: 2701 Vine St
+    latitude: 39.1305370
+    longitude: -84.5098211
+    location_source: https://www.openstreetmap.org/way/69693550
+    website: https://ladder19.com/
+  - slug: scottysonvine
+    name: Scotty's on Vine
+    website:
+  - slug: unclewoodys_uc
+    name: Uncle Woody's Pub
+    address: 339 Calhoun St
+    latitude: 39.1284815
+    longitude: -84.5200773
+    location_source: https://www.openstreetmap.org/way/546760764
+    website:            # Facebook-only presence
+  - slug: divebarcincinnati
+    name: Dive Bar
+    address: 2608 Short Vine St
+    latitude: 39.1294997
+    longitude: -84.5092984
+    location_source: https://www.openstreetmap.org/way/69693387
+    website:
+  - slug: cliftontavern513
+    name: Clifton Heights Tavern
+    address: 239 W McMillan St
+    latitude: 39.1276920
+    longitude: -84.5208954
+    location_source: https://www.openstreetmap.org/way/67142827
+    website:
+  - slug: macspizzaclifton
+    name: Mac's Pizza Pub
+    kind: bar_restaurant
+    address: 205 W McMillan St
+    latitude: 39.1276983
+    longitude: -84.5196699
+    location_source: https://www.openstreetmap.org/node/2109412870
+    website: https://macspizzapub.com/macs-pizza-pub-clifton/
+  - slug: martinosonvine
+    name: Martino's on Vine
+    kind: bar_restaurant
+    address: 2618 Short Vine St
+    latitude: 39.1298363
+    longitude: -84.5092421
+    location_source: https://www.openstreetmap.org/way/69693392
+    website:
+  - slug: topcatscincy
+    name: Top Cat's
+    address: 2820 Short Vine St
+    latitude: 39.1324427
+    longitude: -84.5087296
+    location_source: https://www.openstreetmap.org/way/69691869
+    website:
+  - slug: longbarcincy
+    name: Long Bar
+    address: 251 Calhoun St
+    latitude: 39.1282704
+    longitude: -84.5174970
+    location_source: https://www.openstreetmap.org/node/6595272385
+    website:
+  - slug: elvaqueroclifton
+    name: El Vaquero
+    kind: bar_restaurant
+    address: 2845 Short Vine St
+    latitude: 39.1322968
+    longitude: -84.5095524
+    location_source: https://www.openstreetmap.org/node/5254726771
+    website: https://vaquerorestaurant.com/clifton
+    # `pages` pins URLs that link discovery cannot reach (this site 403s the
+    # link-mining pass, and the specials live off the location page).
+    pages:
+      - https://vaquerorestaurant.com/page/specials
+
+  # Added 2026-09-10. Addresses checked against the linked official sites (or
+  # Clifton Town Meeting's directory). OSM venue/building positions, May 2026
+  # data snapshot. These are places to explore, not verified special offers.
+  # instagram:false keeps unverified account names out of the scraper and UI.
+  - slug: arlins_clifton
+    name: Arlin's Bar & Garden
+    kind: bar_restaurant
+    instagram: false
+    address: 307 Ludlow Ave
+    latitude: 39.1434157
+    longitude: -84.5196883
+    location_source: https://www.openstreetmap.org/node/1800676668
+    # Address: https://www.cliftoncommunity.org/businesses
+  - slug: fries_cafe
+    name: Fries Cafe
+    kind: bar
+    instagram: false
+    address: 3247 Jefferson Ave
+    latitude: 39.1398277
+    longitude: -84.5129188
+    location_source: https://www.openstreetmap.org/node/13799788164
+    website: https://www.friescafeclifton.com/
+  - slug: gaslight_bar_grill
+    name: Gaslight Bar & Grill
+    kind: bar_restaurant
+    instagram: false
+    address: 351 Ludlow Ave
+    latitude: 39.1436324
+    longitude: -84.5213194
+    location_source: https://www.openstreetmap.org/way/69545982
+    website: https://gaslightbarandgrillclifton.com/
+  - slug: alive_and_well
+    name: Alive & Well
+    kind: bar
+    instagram: false
+    address: 3410 Telford St
+    latitude: 39.1440840
+    longitude: -84.5204170
+    location_source: https://www.openstreetmap.org/node/12013452269
+    website: https://www.aliveandwellbar.com/
+  - slug: mios_clifton
+    name: Mio's Pizzeria - Clifton
+    kind: bar_restaurant
+    instagram: false
+    address: 2634 Short Vine St
+    latitude: 39.1302348
+    longitude: -84.5091910
+    location_source: https://www.openstreetmap.org/way/528266022
+    website: https://www.miospizza.com/clifton-menu
+
+  - slug: adriaticos_uc
+    name: Adriatico's
+    kind: restaurant
+    instagram: false
+    address: 113 W McMillan Ave
+    latitude: 39.1274296
+    longitude: -84.5163388
+    location_source: https://www.openstreetmap.org/way/201063663
+    website: https://adriaticosuc.com/
+  - slug: drunken_bento
+    name: Drunken Bento
+    kind: restaurant
+    instagram: false
+    address: 212 W McMillan St
+    latitude: 39.1280187
+    longitude: -84.5197920
+    location_source: https://www.openstreetmap.org/node/6525619588
+    website: https://www.drunkenbento.com/
+  - slug: elephant_walk
+    name: Elephant Walk
+    kind: restaurant
+    instagram: false
+    address: 170 W McMillan St
+    latitude: 39.1278933
+    longitude: -84.5180392
+    location_source: https://www.openstreetmap.org/node/6525607981
+    website: https://www.elephantwalkcincy.com/
+  - slug: krishna_carryout
+    name: Krishna Carryout
+    kind: restaurant
+    instagram: false
+    address: 313 Calhoun St
+    latitude: 39.1283843
+    longitude: -84.5188269
+    location_source: https://www.openstreetmap.org/node/1744632774
+    website: https://krishnacarryoutcincy.com/
+  - slug: thai_express_clifton
+    name: Thai Express
+    kind: restaurant
+    instagram: false
+    address: 213 W McMillan St
+    latitude: 39.1277249
+    longitude: -84.5199826
+    location_source: https://www.openstreetmap.org/way/245815969
+    website: https://thaiexpresscincinnati.com/en
+  - slug: skyline_clifton
+    name: Skyline Chili - Clifton
+    kind: restaurant
+    instagram: false
+    address: 290 Ludlow Ave
+    latitude: 39.1435640
+    longitude: -84.5190419
+    location_source: https://www.openstreetmap.org/node/1800676654
+    website: https://locations.skylinechili.com/skyline-chili-a0254bd3f93f
+  - slug: ambar_india
+    name: Ambar India Restaurant
+    kind: restaurant
+    instagram: false
+    address: 350 Ludlow Ave
+    latitude: 39.1439916
+    longitude: -84.5214516
+    location_source: https://www.openstreetmap.org/way/168888120
+    website: https://ambarindia.net/
+  - slug: adeep_india
+    name: Adeep India
+    kind: restaurant
+    instagram: false
+    address: 211 W McMillan St
+    latitude: 39.1277525
+    longitude: -84.5198725
+    location_source: https://www.openstreetmap.org/node/2109412891
+    website: https://deepindiacincinnati.com/

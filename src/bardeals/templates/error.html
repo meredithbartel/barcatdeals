@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} — Bar Deals{% endblock %}
+{% block content %}
+<header class="head">
+  <h1 class="head-title">{{ code }}</h1>
+  <p class="head-sub">{{ message }}</p>
+</header>
+<p class="back"><a href="{{ url_for('index') }}">← Back to tonight's deals</a></p>
+{% endblock %}

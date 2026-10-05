@@ -1,0 +1,16 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# The site is read-only over deploy/bardeals.db, which publish.py refreshes.
+services:
+  - type: web
+    name: bardeals
+    runtime: python
+    plan: free
+    buildCommand: pip install -e ".[deploy]"
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 30 "bardeals.web:create_app()"
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.7"
+      - key: BARDEALS_DB
+        value: deploy/bardeals.db

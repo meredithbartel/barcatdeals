@@ -1,0 +1,602 @@
+/* ==========================================================================
+   Theme layer. Loaded last, so it settles the questions the other sheets left
+   open: what the guide looks like after dark, how big the small type is
+   allowed to get, and which numbers deserve to dominate.
+
+   Three rules hold everything together:
+     1. Nothing renders below 12px. Ever.
+     2. The price is the content; it gets the weight.
+     3. The palette has two readings - daylight paper and lamplight - and the
+        personality survives both.
+   ========================================================================== */
+
+:root {
+  /* Small-text scale. The floor is 0.75rem; there is no step below it. */
+  --fs-meta:    0.75rem;    /* 12px - chips, timestamps, footnotes */
+  --fs-caption: 0.8125rem;  /* 13px - labels, secondary meta */
+  --fs-small:   0.875rem;   /* 14px - supporting copy */
+  --fs-body:    0.9375rem;  /* 15px - dense UI body */
+  --fs-base:    1rem;       /* 16px - default reading size */
+  --fs-lead:    1.125rem;   /* 18px - deal text, emphasis */
+
+  /* Display scale for the numbers people actually scan for. */
+  --fs-price:   1.5rem;     /* 24px - the price on a card */
+  --fs-price-lg:2rem;       /* 32px - the price on a featured card */
+
+  --ease: cubic-bezier(.2, .7, .3, 1);
+}
+
+/* --------------------------------------------------------------------------
+   Dark mode. Same field guide, read by lamplight: the paper goes to deep
+   olive-black, the evergreen ink inverts to warm paper, and the terracotta
+   brightens just enough to stay legible against it.
+
+   Applied three ways so the toggle beats the system in both directions:
+     - bare :root / .map-page keeps the light values
+     - the media query covers "system dark, no explicit choice"
+     - [data-theme="dark"] covers an explicit choice
+   -------------------------------------------------------------------------- */
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) { color-scheme: dark; }
+  html:not([data-theme="light"]) :root,
+  html:not([data-theme="light"]) body,
+  html:not([data-theme="light"]) .map-page {
+    --bg:         #12150f;
+    --bg-raised:  #1a1e16;
+    --bg-sunken:  #0c0f09;
+    --line:       #2c3327;
+    --text:       #ece8d8;
+    --text-dim:   #aab09d;
+    --text-faint: #8f9683;
+    --accent:     #e8815a;
+    --accent-ink: #1a0f08;
+    --accent-soft:#33241c;
+    --live:       #7fc46a;
+    --warn:       #dc9a5b;
+    --link:       #a6cbab;
+  }
+}
+
+html[data-theme="dark"] { color-scheme: dark; }
+html[data-theme="dark"] :root,
+html[data-theme="dark"] body,
+html[data-theme="dark"] .map-page {
+  --bg:         #12150f;
+  --bg-raised:  #1a1e16;
+  --bg-sunken:  #0c0f09;
+  --line:       #2c3327;
+  --text:       #ece8d8;
+  --text-dim:   #aab09d;
+  --text-faint: #8f9683;
+  --accent:     #e8815a;
+  --accent-ink: #1a0f08;
+  --accent-soft:#33241c;
+  --live:       #7fc46a;
+  --warn:       #dc9a5b;
+  --link:       #a6cbab;
+}
+
+/* Surfaces that were hardcoded light in the base sheets. */
+html[data-theme="dark"] .map-page .site-header,
+html:not([data-theme="light"]) .map-page .site-header {
+  background: var(--bg);
+  border-bottom-color: var(--line);
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) .map-page .brand-mark { background: var(--text); color: var(--bg); }
+  html:not([data-theme="light"]) .map-page .site-nav a[aria-current] { background: var(--bg-raised); }
+  html:not([data-theme="light"]) .header-tools button { border-color: var(--line); color: var(--text); }
+  html:not([data-theme="light"]) .header-tools b { background: var(--bg-sunken); color: var(--text); }
+  html:not([data-theme="light"]) .header-tools #header-plan { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  html:not([data-theme="light"]) #header-plan b { background: #00000033; color: var(--accent-ink); }
+  html:not([data-theme="light"]) .explorer-search { background: var(--bg-raised); border-color: var(--line); box-shadow: none; }
+  html:not([data-theme="light"]) .explorer-search button { background: var(--bg-sunken); color: var(--text); }
+  html:not([data-theme="light"]) .kind-switch a { background: var(--bg-raised); border-color: var(--line); color: var(--text-dim); }
+  html:not([data-theme="light"]) .kind-switch a[aria-current] { background: var(--text); border-color: var(--text); color: var(--bg); }
+  html:not([data-theme="light"]) .map-page .daychip--on { background: var(--bg-raised); color: var(--text); }
+}
+
+html[data-theme="dark"] .map-page .brand-mark { background: var(--text); color: var(--bg); }
+html[data-theme="dark"] .map-page .site-nav a[aria-current] { background: var(--bg-raised); }
+html[data-theme="dark"] .header-tools button { border-color: var(--line); color: var(--text); }
+html[data-theme="dark"] .header-tools b { background: var(--bg-sunken); color: var(--text); }
+html[data-theme="dark"] .header-tools #header-plan { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+html[data-theme="dark"] #header-plan b { background: #00000033; color: var(--accent-ink); }
+html[data-theme="dark"] .explorer-search { background: var(--bg-raised); border-color: var(--line); box-shadow: none; }
+html[data-theme="dark"] .explorer-search button { background: var(--bg-sunken); color: var(--text); }
+html[data-theme="dark"] .kind-switch a { background: var(--bg-raised); border-color: var(--line); color: var(--text-dim); }
+html[data-theme="dark"] .kind-switch a[aria-current] { background: var(--text); border-color: var(--text); color: var(--bg); }
+html[data-theme="dark"] .map-page .daychip--on { background: var(--bg-raised); color: var(--text); }
+
+/* --------------------------------------------------------------------------
+   The summary line, restored.
+
+   explorer.css hid `.head-stat` - which is the single most useful sentence on
+   the page: how many deals, at how many places, from what price, how many
+   running right now. It is the answer to the question the visitor arrived with.
+   -------------------------------------------------------------------------- */
+
+.map-page .head-stat {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 12px 0 0;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg-raised);
+  font-size: var(--fs-caption);
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+.map-page .head-stat strong {
+  font-size: var(--fs-body);
+  font-weight: 650;
+  color: var(--text);
+}
+.map-page .head-stat .accent { color: var(--accent); font-weight: 700; }
+.map-page .head-stat .live { color: var(--live); font-weight: 700; }
+
+/* --------------------------------------------------------------------------
+   Prices. A student scans for a number, so the number gets the weight - and
+   tabular figures so columns of prices line up as a readable ledger.
+   -------------------------------------------------------------------------- */
+
+.deal-price,
+.wprice,
+.place-offer--available {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.map-page .deal-price {
+  font-size: var(--fs-price);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: 1.1;
+  color: var(--accent);
+}
+.map-page .deal-price-na {
+  font-size: var(--fs-meta);
+  font-weight: 650;
+  letter-spacing: .06em;
+  color: var(--text-faint);
+}
+.map-page .deal-text {
+  font-size: var(--fs-body);
+  line-height: 1.4;
+}
+
+/* --------------------------------------------------------------------------
+   Readability floors for the densest regions. The rescale fixed the declared
+   sizes; these keep the surrounding rhythm from re-cramping them.
+   -------------------------------------------------------------------------- */
+
+.map-page .chip,
+.map-page .badge,
+.map-page .updated,
+.explorer-footnote,
+.place-kind,
+.area-tag,
+.map-legend,
+.map-eyebrow,
+.explorer-topline .eyebrow {
+  line-height: 1.4;
+  letter-spacing: .02em;
+}
+
+.map-page .daychip { min-height: 50px; }
+.map-page .daychip-label { font-size: var(--fs-caption); font-weight: 600; }
+.map-page .daychip-sub { font-size: var(--fs-meta); }
+
+/* Tap targets: 44px is the floor for anything a thumb has to hit. */
+.map-page .kind-switch a,
+.map-page .tab,
+.map-page .pill,
+.map-page .view-switch a,
+.map-page .browse-tabs a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --------------------------------------------------------------------------
+   Theme toggle, in the header next to the other tools.
+   -------------------------------------------------------------------------- */
+
+#theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 44px;
+  min-height: 39px;
+  padding: 8px 13px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: transparent;
+  color: var(--text);
+  font-size: var(--fs-meta);
+}
+#theme-toggle:hover { border-color: var(--text-faint); }
+#theme-toggle .theme-icon { font-size: var(--fs-small); line-height: 1; }
+/* Each theme names the one it would switch *to*. */
+html:not([data-theme="dark"]) #theme-toggle .theme-label-dark,
+html[data-theme="dark"] #theme-toggle .theme-label-light { display: inline; }
+html:not([data-theme="dark"]) #theme-toggle .theme-label-light,
+html[data-theme="dark"] #theme-toggle .theme-label-dark { display: none; }
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]):not([data-theme="dark"]) #theme-toggle .theme-label-light { display: inline; }
+  html:not([data-theme="light"]):not([data-theme="dark"]) #theme-toggle .theme-label-dark { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   Motion. Subtle, and entirely optional.
+   -------------------------------------------------------------------------- */
+
+.map-page .deal,
+.map-page .place-card,
+.map-page .pill,
+.map-page .tab {
+  transition: border-color .16s var(--ease), background-color .16s var(--ease),
+              transform .16s var(--ease);
+}
+.map-page .deal:hover { border-color: var(--text-faint); }
+.map-page .place-card:active { transform: scale(.995); }
+
+@media (prefers-reduced-motion: reduce) {
+  .map-page * { transition: none !important; animation: none !important; }
+}
+
+/* --------------------------------------------------------------------------
+   Bigger type needs more room than a 410px sidebar gives it.
+   -------------------------------------------------------------------------- */
+
+@media (min-width: 1100px) {
+  .map-page { --sidebar-width: 448px; }
+}
+@media (min-width: 1500px) {
+  .map-page { --sidebar-width: 496px; }
+}
+
+/* A window that closed while the page sat open. Marked, not hidden - it was
+   true when the page loaded, and pretending otherwise is its own lie. */
+.map-page .deal--just-ended { opacity: .55; }
+.map-page .deal--just-ended .badge { background: var(--bg-sunken); color: var(--text-faint); }
+
+/* --------------------------------------------------------------------------
+   Last call. A window closing inside half an hour is the one piece of
+   information that changes what a person does next, so it gets a rail and a
+   colour rather than another grey chip.
+   -------------------------------------------------------------------------- */
+
+.map-page .deal--urgent {
+  border-color: color-mix(in srgb, var(--warn) 55%, var(--line));
+  box-shadow: inset 3px 0 0 0 var(--warn);
+}
+.map-page .deal--urgent .badge--now { background: var(--warn); color: var(--accent-ink); }
+
+/* Group headers answer "is it worth opening this" without opening it. */
+.timegroup-from {
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.timegroup-urgent {
+  font-size: var(--fs-meta);
+  font-weight: 650;
+  letter-spacing: 0;
+  color: var(--warn);
+}
+
+/* A statistic you can act on. Underlined on hover only, so the summary still
+   reads as a sentence rather than a row of links. */
+.stat-link { color: inherit; text-decoration: none; border-radius: 6px; }
+.stat-link:hover { text-decoration: underline; }
+.stat-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* The jump target needs clearance under the sticky header. */
+.timegroup { scroll-margin-top: 88px; }
+
+/* --------------------------------------------------------------------------
+   The map stage after dark.
+
+   explorer.css paints everything that floats over the map - the fog that
+   keeps the heading legible, the toolbar, camera dock, pins, popups - in
+   hardcoded daylight colours. Over the dark basemap that read as a cream
+   haze with unreadable green ink. Each surface takes a role variable here;
+   light values match explorer.css, and only the variables change by theme.
+   -------------------------------------------------------------------------- */
+
+.map-page {
+  --map-ground:     #e6ebe3;
+  --map-edge:       #d6decb;
+  --map-fog-top:    #f3f4ea;
+  --map-fog-bottom: #e9ede2;
+  --map-ink:        #3a5137;
+  --map-ink-dim:    #6d7b62;
+  --map-glass:      #fffef6ed;
+  --map-glass-line: #cbd4c0;
+  --map-glass-ink:  #506143;
+  --map-glass-hover:#e8eddd;
+  --map-pressed:    #e8eddb;
+  --map-pressed-ink:#3b5732;
+  --map-strong:     #27492f;
+  --map-strong-ink: #fffdf0;
+  --map-card:       #fffdf3;
+  --map-card-line:  #c6d2b7;
+  --map-card-ink:   #35532d;
+  --map-card-dim:   #65745b;
+  --map-card-hover: #eff3e5;
+  --map-link:       #576d46;
+  --pin-ring:       #fffcf1;
+  --pin-quiet:      #fffdf1;
+  --pin-quiet-ink:  #526e41;
+  --pin-quiet-line: #8aa17a;
+  --pin-restaurant: #e8eecd;
+  --pin-quiet-stem: #698758;
+  --map-shadow:     #2f4b2620;
+  --side-card:      #fffef9;
+  --side-line:      #dce0d2;
+  --side-line-hover:#a8b29b;
+  --side-meta:      #65745b;
+  --side-offer:     #975030;
+  --avatar:         #e6e9d9;
+  --avatar-ink:     #56704e;
+  --avatar-food:    #f2e4d5;
+  --avatar-food-ink:#ac6944;
+  --note:           #f2edda;
+  --note-line:      #ddd7bd;
+  --note-ink:       #7c6944;
+  --sample:         #f1e8dc;
+  --sample-line:    #e4d7c7;
+  --sample-ink:     #846349;
+  --switch:         #e9ecdf;
+  --switch-on:      #fffef9;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) .map-page {
+    --map-ground:     #10130e;
+    --map-edge:       #262c22;
+    --map-fog-top:    #10130e;
+    --map-fog-bottom: #10130e;
+    --map-ink:        #ece8d8;
+    --map-ink-dim:    #aab09d;
+    --map-glass:      #1a1e16e8;
+    --map-glass-line: #343c2e;
+    --map-glass-ink:  #d6d3c3;
+    --map-glass-hover:#262c21;
+    --map-pressed:    #2e3628;
+    --map-pressed-ink:#ece8d8;
+    --map-strong:     #ece8d8;
+    --map-strong-ink: #12150f;
+    --map-card:       #1a1e16;
+    --map-card-line:  #343c2e;
+    --map-card-ink:   #ece8d8;
+    --map-card-dim:   #aab09d;
+    --map-card-hover: #232920;
+    --map-link:       #a6cbab;
+    --pin-ring:       #12150f;
+    --pin-quiet:      #262d23;
+    --pin-quiet-ink:  #cfe3c4;
+    --pin-quiet-line: #8aa77a;
+    --pin-restaurant: #2b3322;
+    --pin-quiet-stem: #8aa77a;
+    --map-shadow:     #00000066;
+    --side-card:      #1a1e16;
+    --side-line:      #2c3327;
+    --side-line-hover:#4a5441;
+    --side-meta:      #aab09d;
+    --side-offer:     #ef9670;
+    --avatar:         #262d21;
+    --avatar-ink:     #a6cbab;
+    --avatar-food:    #33241c;
+    --avatar-food-ink:#e8a07f;
+    --note:           #201f17;
+    --note-line:      #3b3826;
+    --note-ink:       #d8c79e;
+    --sample:         #2a201a;
+    --sample-line:    #47352a;
+    --sample-ink:     #e6b996;
+    --switch:         #0c0f09;
+    --switch-on:      #2e3628;
+  }
+}
+html[data-theme="dark"] .map-page {
+  --map-ground:     #10130e;
+  --map-edge:       #262c22;
+  --map-fog-top:    #10130e;
+  --map-fog-bottom: #10130e;
+  --map-ink:        #ece8d8;
+  --map-ink-dim:    #aab09d;
+  --map-glass:      #1a1e16e8;
+  --map-glass-line: #343c2e;
+  --map-glass-ink:  #d6d3c3;
+  --map-glass-hover:#262c21;
+  --map-pressed:    #2e3628;
+  --map-pressed-ink:#ece8d8;
+  --map-strong:     #ece8d8;
+  --map-strong-ink: #12150f;
+  --map-card:       #1a1e16;
+  --map-card-line:  #343c2e;
+  --map-card-ink:   #ece8d8;
+  --map-card-dim:   #aab09d;
+  --map-card-hover: #232920;
+  --map-link:       #a6cbab;
+  --pin-ring:       #12150f;
+  --pin-quiet:      #262d23;
+  --pin-quiet-ink:  #cfe3c4;
+  --pin-quiet-line: #8aa77a;
+  --pin-restaurant: #2b3322;
+  --pin-quiet-stem: #8aa77a;
+  --map-shadow:     #00000066;
+  --side-card:      #1a1e16;
+  --side-line:      #2c3327;
+  --side-line-hover:#4a5441;
+  --side-meta:      #aab09d;
+  --side-offer:     #ef9670;
+  --avatar:         #262d21;
+  --avatar-ink:     #a6cbab;
+  --avatar-food:    #33241c;
+  --avatar-food-ink:#e8a07f;
+  --note:           #201f17;
+  --note-line:      #3b3826;
+  --note-ink:       #d8c79e;
+  --sample:         #2a201a;
+  --sample-line:    #47352a;
+  --sample-ink:     #e6b996;
+  --switch:         #0c0f09;
+  --switch-on:      #2e3628;
+}
+
+/* Stage and the fog that sits between the map and its heading. */
+.map-page .map-stage { background: var(--map-ground); border-color: var(--map-edge); }
+.map-page .map-stage::after {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--map-fog-top) 97%, transparent),
+      color-mix(in srgb, var(--map-fog-top) 58%, transparent) 120px, transparent 270px),
+    linear-gradient(0deg, color-mix(in srgb, var(--map-fog-bottom) 70%, transparent), transparent 160px);
+}
+.map-page .map-heading h2,
+.map-page .map-caption strong { color: var(--map-ink); }
+.map-page .map-eyebrow,
+.map-page #map-gesture-hint,
+.map-page .map-caption,
+.map-page .map-legend,
+.map-page .map-plan-teaser > span { color: var(--map-ink-dim); }
+
+/* Floating controls. */
+.map-page .map-neighborhoods button,
+.map-page .map-toolbar button {
+  background: var(--map-glass); border-color: var(--map-glass-line); color: var(--map-glass-ink);
+}
+.map-page .map-toolbar button[aria-pressed=true] {
+  background: var(--map-pressed); border-color: var(--map-glass-line); color: var(--map-pressed-ink);
+}
+.map-page .map-neighborhoods button:hover,
+.map-page .map-neighborhoods button[aria-pressed=true],
+.map-page .map-plan-teaser button {
+  background: var(--map-strong); border-color: var(--map-strong); color: var(--map-strong-ink);
+}
+.map-page .camera-dock { background: var(--map-glass); border-color: var(--map-glass-line); box-shadow: 0 8px 25px var(--map-shadow); }
+.map-page .camera-dock button { color: var(--map-glass-ink); }
+.map-page .camera-dock button:hover { background: var(--map-glass-hover); }
+.map-page .camera-mode { background: var(--map-glass-hover); }
+.map-page .camera-mode button[aria-pressed=true] { background: var(--map-pressed); color: var(--map-pressed-ink); }
+.map-page .dock-divider { background: var(--map-glass-line); }
+.map-page .tilt-control { border-top-color: var(--map-glass-line); color: var(--map-ink-dim); }
+.map-page .maplibregl-ctrl-attrib { background: var(--map-glass) !important; color: var(--map-ink-dim) !important; }
+.map-page .maplibregl-ctrl-attrib a { color: var(--map-glass-ink); }
+
+/* Pins. The terracotta deal pin already works on both grounds; its ring and
+   the quiet/restaurant pins need to sit on the dark map rather than glow. */
+.map-page .marker-pill { border-color: var(--pin-ring); box-shadow: 0 3px 10px var(--map-shadow); }
+.map-page .bar-marker::after { border-color: var(--pin-ring); }
+.map-page .bar-marker--quiet .marker-pill { background: var(--pin-quiet); color: var(--pin-quiet-ink); border-color: var(--pin-quiet-line); }
+.map-page .bar-marker--restaurant .marker-pill { background: var(--pin-restaurant); }
+.map-page .marker-label { background: var(--map-card); border-color: var(--map-card-line); color: var(--map-card-ink); box-shadow: 0 4px 15px var(--map-shadow); }
+.map-page .marker-stop { border-color: var(--pin-ring); }
+
+/* Cluster popup and the loading / fallback cards. */
+.map-page .bar-cluster-popup .maplibregl-popup-content { background: var(--map-card); border-color: var(--map-card-line); color: var(--map-card-ink); box-shadow: 0 10px 30px var(--map-shadow); }
+.map-page .bar-cluster-popup .maplibregl-popup-tip { border-top-color: var(--map-card); border-bottom-color: var(--map-card); }
+.map-page .bar-cluster-popup .maplibregl-popup-close-button { color: var(--map-card-dim); }
+.map-page .cluster-menu p { color: var(--map-card-dim); }
+.map-page .cluster-menu-list button { border-top-color: var(--map-card-line); color: var(--map-card-ink); }
+.map-page .cluster-menu-list button:hover { background: var(--map-card-hover); }
+.map-page .cluster-zoom { background: var(--map-pressed); color: var(--map-pressed-ink); }
+.map-page .map-loading,
+.map-page .map-fallback,
+.map-page .map-nojs { background: var(--map-card); border-color: var(--map-card-line); color: var(--map-card-ink); box-shadow: 0 10px 35px var(--map-shadow); }
+.map-page .map-loading > span:last-child,
+.map-page .map-fallback p { color: var(--map-card-dim); }
+.map-page .loading-orbit { border-color: var(--map-card-line); border-top-color: var(--accent); }
+
+/* The night plan panel floats over the map too. */
+.map-page .night-plan-panel { background: var(--map-card); border-color: var(--map-card-line); box-shadow: -12px 0 55px var(--map-shadow); }
+.map-page #close-plan { background: var(--map-pressed); color: var(--map-pressed-ink); }
+.map-page .plan-description,
+.map-page .plan-empty p,
+.map-page .stop-address,
+.map-page #plan-route-note,
+.map-page .plan-local-note { color: var(--map-card-dim); }
+.map-page .plan-empty,
+.map-page .plan-stop { background: var(--map-card-hover); border-color: var(--map-card-line); }
+.map-page .stop-name { color: var(--map-card-ink); }
+.map-page .stop-number { background: var(--map-pressed); color: var(--map-pressed-ink); }
+.map-page .stop-controls button { background: var(--map-card); border-color: var(--map-card-line); color: var(--map-glass-ink); }
+.map-page .plan-footer { border-top-color: var(--map-card-line); }
+
+/* Venue drawer controls that sat on hardcoded paper. */
+.map-page .drawer-back { color: var(--map-ink-dim); }
+.map-page #venue-position,
+.map-page #drawer-address { color: var(--map-card-dim); }
+.map-page .venue-stepper button,
+.map-page .drawer-primary #drawer-save { background: var(--map-pressed); border-color: var(--map-glass-line); color: var(--map-pressed-ink); }
+.map-page .drawer-primary #drawer-save[aria-pressed=true] { color: var(--accent); }
+.map-page .drawer-actions a { border-bottom-color: var(--map-glass-line); color: var(--map-link); }
+.map-page .drawer-note { background: var(--map-card-hover); color: var(--map-card-dim); }
+
+/* Cross-fade the floating chrome with the basemap rather than snapping. */
+.map-page .map-stage,
+.map-page .map-toolbar button,
+.map-page .map-neighborhoods button,
+.map-page .camera-dock,
+.map-page .marker-label {
+  transition: background-color .45s var(--ease), border-color .45s var(--ease), color .45s var(--ease);
+}
+.map-page .marker-pill {
+  transition: transform .18s, background-color .45s var(--ease), border-color .45s var(--ease), color .45s var(--ease);
+}
+.map-page .camera-buttons::before { color: var(--map-ink-dim); }
+/* Re-assert the active pin over the themed quiet/restaurant pins above. */
+.map-page .bar-marker:is(:hover, :focus-visible, .is-active) .marker-pill { background: #385333; border-color: #fffbea; color: #fffdf3; }
+
+/* Sidebar surfaces beside the map: place cards, notices and the view switch. */
+.map-page .place-card { background: var(--side-card); border-color: var(--side-line); }
+.map-page .place-card:hover { border-color: var(--side-line-hover); }
+.map-page .place-card.is-selected { border-color: var(--accent); }
+.map-page .place-avatar { background: var(--avatar); color: var(--avatar-ink); }
+.map-page .place-avatar--food { background: var(--avatar-food); color: var(--avatar-food-ink); }
+.map-page .place-kind,
+.map-page .place-kind > span,
+.map-page .place-address,
+.map-page .place-offer,
+.map-page .save-place,
+.map-page .directory-note,
+.map-page .updated,
+.map-page .explorer-footnote,
+.map-page .browse-tabs button span { color: var(--side-meta); }
+.map-page .place-offer--available,
+.map-page .cluster-menu-list small { color: var(--side-offer); }
+.map-page .save-place[aria-pressed=true] { color: var(--accent); }
+.map-page .banner { background: var(--note); border-color: var(--note-line); color: var(--note-ink); }
+.map-page .banner--sample { background: var(--sample); border-color: var(--sample-line); color: var(--sample-ink); }
+.map-page .view-switch { background: var(--switch); }
+.map-page .view-switch a { color: var(--side-meta); }
+.map-page .view-switch a[aria-current] { background: var(--switch-on); color: var(--text); }
+
+/* Spread pins. A pin nudged off its spot keeps a thin leader back to where
+   the place really is, ending in the same location dot unmoved pins carry. */
+.map-page .marker-leader {
+  position: absolute; left: 50%; bottom: 0; height: 1.5px; margin-bottom: -0.75px;
+  transform-origin: 0 50%; background: #b75a37; opacity: .75; pointer-events: none;
+}
+.map-page .marker-spot {
+  position: absolute; left: calc(50% - 4px); bottom: -4px; width: 8px; height: 8px;
+  border-radius: 50%; background: #b75a37; border: 2px solid var(--pin-ring);
+  box-sizing: border-box; pointer-events: none;
+}
+.map-page .bar-marker--moved::after { display: none; }
+.map-page .bar-marker--quiet::before,
+.map-page .bar-marker--quiet::after,
+.map-page .bar-marker--quiet .marker-leader,
+.map-page .bar-marker--quiet .marker-spot { background: var(--pin-quiet-stem); }
+.map-page .bar-marker:is(:hover, :focus-visible, .is-active) .marker-leader { opacity: 1; height: 2px; }

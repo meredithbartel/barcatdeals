@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+node_modules/
+# Local working data: scrapes, logs, reports, dev tooling. The site serves the
+# cleaned snapshot in deploy/, written by publish.py.
+data/
+deploy/*.tmp

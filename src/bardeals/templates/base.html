@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="Find food and drink specials around Clifton, Cincinnati. Compare prices, plan your week, and check every deal at its source.">
+  {# The data changes once a day; refresh hourly so a tab left open goes stale slowly. #}
+  <meta http-equiv="refresh" content="3600">
+  <title>{% block title %}Bar Deals{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  {% block head_extra %}{% endblock %}
+  {# Loaded last: settles the palette, the type floor and the price weight. #}
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  {# Set the theme before first paint, so a dark-mode visitor never sees a
+     white flash. Inline and synchronous on purpose. #}
+  <script>
+    (function () {
+      try {
+        var choice = localStorage.getItem('bardeals-theme');
+        if (choice === 'light' || choice === 'dark') {
+          document.documentElement.setAttribute('data-theme', choice);
+        }
+      } catch (error) { /* no stored choice: follow prefers-color-scheme */ }
+    })();
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20y%3D%27.9em%27%20font-size%3D%2790%27%3E%F0%9F%8D%BA%3C/text%3E%3C/svg%3E">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main">Skip to deals</a>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="{{ url_for('index') }}" aria-label="Bar Deals home"><span class="brand-mark" aria-hidden="true">b.</span>bar deals<span class="brand-period">.</span></a>
+      <span class="location">Clifton <span aria-hidden="true">/</span> Cincinnati</span>
+      <button type="button" id="theme-toggle" hidden
+              aria-label="Switch colour theme">
+        <span class="theme-icon" aria-hidden="true">◐</span>
+        <span class="theme-label-dark">Dark</span>
+        <span class="theme-label-light">Light</span>
+      </button>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="{{ browse_url('index') }}"{% if request.endpoint == 'index' %} aria-current="page"{% endif %}>Tonight</a>
+        <a href="{{ browse_url('week') }}"{% if request.endpoint == 'week' %} aria-current="page"{% endif %}>This week</a>
+      </nav>
+      {% if request.endpoint == 'index' %}
+      <div class="header-tools enhancement-only">
+        <button type="button" id="header-saved" aria-label="Show saved places">♡ <span>Saved</span> <b id="saved-count">0</b></button>
+        <button type="button" id="header-plan" aria-expanded="false" aria-controls="night-plan-panel">My night <b id="plan-count">0</b> <span aria-hidden="true">↗</span></button>
+      </div>
+      {% endif %}
+    </div>
+  </header>
+  <div class="wrap">
+    <main id="main" tabindex="-1">{% block content %}{% endblock %}</main>
+
+    <footer class="footer">
+      <div class="foot-row">
+        <a href="{{ url_for('index') }}">All bars</a>
+        <span class="muted">A little less on the tab.</span>
+      </div>
+      <p class="muted small">
+        Specials from bar websites and Instagram. Details can change — check the source before you go.
+      </p>
+    </footer>
+  </div>
+  <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='countdown.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

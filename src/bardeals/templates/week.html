@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "_deal.html" import filter_bar %}
+{% block title %}This week — Bar Deals{% endblock %}
+
+{% block content %}
+<header class="head">
+  <p class="back"><a href="{{ browse_url('index') }}">← Tonight</a></p>
+  <p class="eyebrow">A good week starts here</p>
+  <h1 class="head-title">This week</h1>
+  <p class="head-sub">
+    {{ start.strftime('%b %d') }} – {{ days[-1].date.strftime('%b %d') }}
+    <span class="dot">·</span>{{ total }} deal{{ '' if total == 1 else 's' }}
+  </p>
+</header>
+
+{% if has_samples %}
+  <p class="banner banner--sample"><strong>Sample deals included.</strong> These illustrate the app; they are not verified offers. Sample links open the bar’s profile.</p>
+{% endif %}
+
+{% if freshness.stale %}
+  <p class="banner banner--warn">{% if freshness.known %}Last updated <strong>{{ freshness.label }}</strong> — these prices may be out of date.{% else %}No specials have been collected yet. Check back after the next update.{% endif %}</p>
+{% endif %}
+
+<div class="explore-layout">
+  <aside class="discovery" aria-label="Filter weekly deals">
+    <h2 class="discovery-title">Make a plan</h2>
+    <p class="discovery-sub">One budget. Seven days of options.</p>
+    {{ filter_bar(filters, categories, price_caps) }}
+  </aside>
+  <div class="results">
+
+{% for d in days %}
+  <section class="weekday{% if d.is_today %} weekday--today{% endif %}">
+    <h2 class="weekday-name">
+      <a href="{{ browse_url('index', day=d.date.isoformat()) }}">{{ d.label }}</a>
+      <span class="weekday-date">{{ d.date.strftime('%b %d') }}</span>
+      {% if d.is_today %}<span class="badge badge--now">today</span>{% endif %}
+      {% if d.cheapest is not none %}
+        <span class="weekday-from">from ${{ '%g' % d.cheapest }}</span>
+      {% endif %}
+    </h2>
+
+    {% if d.deals %}
+      <ul class="weekday-deals">
+        {% for deal in d.deals %}
+          <li>
+            {% if deal.price_label %}
+              <span class="wprice">{{ deal.price_label }}</span>
+            {% else %}
+              <span class="wprice wprice--na">—</span>
+            {% endif %}
+            <span class="wtext">{{ deal.deal_text }}</span>
+            <a class="wvenue" href="{{ url_for('venue', slug=deal.venue_slug) }}">{{ deal.venue_name }}</a>
+            {% if deal.window %}<span class="muted small">{{ deal.window }}</span>{% endif %}
+            {% if deal.verify.kind == 'sample' %}<span class="chip chip--sample">sample</span>{% endif %}
+            {% if deal.verify.url %}
+              <a class="verify small" href="{{ deal.verify.url }}" title="{{ deal.verify.title }}"
+                 target="_blank" rel="noopener noreferrer" aria-label="Check source for {{ deal.deal_text }} at {{ deal.venue_name }}">↗</a>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted small">
+        {% if filters.active %}nothing matching those filters{% else %}nothing on record{% endif %}
+      </p>
+    {% endif %}
+  </section>
+{% endfor %}
+</div>
+</div>
+
+<p class="updated muted small">
+  A deal shows on every day it runs, so weekly specials repeat down the week.
+</p>
+{% endblock %}

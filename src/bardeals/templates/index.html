@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+{% from "_deal.html" import deal_card, filter_bar %}
+{% block title %}{% if is_today %}Tonight{% else %}{{ day.strftime('%A') }}{% endif %} — Bar Deals{% endblock %}
+{% block body_class %}map-page{% if request.args.get('view') == 'list' %} map-page--list{% endif %}{% endblock %}
+{% block head_extra %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/maplibre-gl.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='explorer.css') }}">
+{% endblock %}
+{% block scripts %}
+  <script src="{{ url_for('static', filename='vendor/maplibre-gl.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='map-camera.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='map-theme.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='night-plan.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='map.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="map-workspace">
+<script id="catalogue-data" type="application/json">{{ catalogue|tojson }}</script>
+<section class="explorer-sidebar" id="explorer-sidebar" aria-label="Find bar deals">
+<script id="map-data" type="application/json">{{ map_data|tojson }}</script>
+<header class="head">
+  <div class="explorer-topline"><p class="eyebrow">A field guide to a good night</p><span class="area-tag">CINCY, OH</span></div>
+  <h1 class="head-title">
+    Good company.<br><span class="title-accent">Great places.</span>
+  </h1>
+  <p class="hero-description">A bite, a drink, your next favorite spot.<br>Find your kind of night around UC.</p>
+  <p class="head-sub">
+    {% if is_today %}Tonight{% else %}{{ day.strftime('%A') }}{% endif %} · {{ day.strftime('%B %d, %Y') }}
+    {% if is_today %}<span class="dot">·</span>{{ now.strftime('%I:%M %p').lstrip('0') }} local time{% endif %}
+  </p>
+
+  {% if total_before_filters %}
+    <p class="head-stat">
+      {% if filters.active %}
+        <strong>{{ deals|length }}</strong> of {{ total_before_filters }} deals
+      {% else %}
+        <strong>{{ deals|length }}</strong> deal{{ '' if deals|length == 1 else 's' }}
+        at <strong>{{ venue_count }}</strong> place{{ '' if venue_count == 1 else 's' }}
+      {% endif %}
+      {# The summary states a fact and is also the fastest way to act on it:
+         reading "from $2" and wanting only the $2 deals is the same impulse. #}
+      {% if cheapest is not none %}
+        <span class="dot">·</span>
+        <a class="stat-link" href="{{ page_url(max='%g' % cheapest) }}"
+           title="Show only deals at ${{ '%g' % cheapest }} or less">
+          from <strong class="accent">${{ '%g' % cheapest }}</strong>
+        </a>
+      {% endif %}
+      {% if on_now_count %}
+        <span class="dot">·</span>
+        <a class="stat-link" href="{{ page_url(sort='time') }}#on-now"
+           title="Jump to what is running right now">
+          <strong class="live">{{ on_now_count }} on now</strong>
+        </a>
+      {% endif %}
+    </p>
+  {% endif %}
+</header>
+
+<form class="filters explorer-search" method="get" action="">
+  {% for key, value in request.args.items() %}{% if key != 'q' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
+  <label class="sr-only" for="place-search">Search places or specials</label>
+  <span aria-hidden="true" class="search-icon">⌕</span>
+  <input id="place-search" type="search" name="q" value="{{ filters.query }}" placeholder="Pizza, a bar, a street…" autocomplete="off">
+  <button type="submit" aria-label="Search">↗</button>
+</form>
+<nav class="kind-switch" aria-label="Type of place">
+  <a href="{{ page_url(kind='') }}"{% if filters.kind == 'all' %} aria-current="true"{% endif %}>Everything</a>
+  <a href="{{ page_url(kind='food') }}"{% if filters.kind == 'food' %} aria-current="true"{% endif %}>Food <span aria-hidden="true">↗</span></a>
+  <a href="{{ page_url(kind='drinks') }}"{% if filters.kind == 'drinks' %} aria-current="true"{% endif %}>Drinks <span aria-hidden="true">↗</span></a>
+</nav>
+
+<nav class="daystrip" aria-label="Choose a day">
+  {% for d in day_strip %}
+    <a class="daychip{% if d.selected %} daychip--on{% endif %}"{% if d.selected %} aria-current="date"{% endif %} href="{{ page_url(day=d.iso) }}">
+      <span class="daychip-label">{{ d.label }}</span>
+      <span class="daychip-sub">{{ d.sub }}</span>
+    </a>
+  {% endfor %}
+  <a class="daychip daychip--wide" href="{{ browse_url('week', start=day.isoformat()) }}">
+    <span class="daychip-label">Week</span>
+    <span class="daychip-sub">all 7</span>
+  </a>
+</nav>
+
+<div class="explorer-viewbar">
+  <nav class="browse-tabs enhancement-only" aria-label="Browse content">
+    <button type="button" data-browse="places" aria-pressed="true">Places <span>{{ directory|length }}</span></button>
+    <button type="button" data-browse="specials" aria-pressed="false">Specials <span>{{ deals|length }}</span></button>
+  </nav>
+  <nav class="view-switch" aria-label="Display mode">
+    <a href="{{ page_url(view='map') }}" data-view="map"{% if request.args.get('view') != 'list' %} aria-current="true"{% endif %}>Map</a>
+    <a href="{{ page_url(view='list') }}" data-view="list"{% if request.args.get('view') == 'list' %} aria-current="true"{% endif %}>List</a>
+  </nav>
+</div>
+
+{% if has_samples %}
+  <p class="banner banner--sample"><strong>Sample deals included.</strong> Check current offers with the venue.</p>
+{% endif %}
+
+{% if freshness.stale %}
+  <p class="banner banner--warn">
+    {% if not freshness.known %}
+      No specials have been collected yet. Check back after the next update.
+    {% else %}
+      Last updated <strong>{{ freshness.label }}</strong> — these prices may be out of date.
+    {% endif %}
+  </p>
+{% endif %}
+
+<div class="explore-layout">
+  <details class="explorer-filters"{% if filters.max_price is not none or filters.category != 'all' %} open{% endif %}>
+    <summary><span>Filter your night</span><span class="filter-summary">{% if filters.active %}Filters on{% else %}Price · drink · food{% endif %} <span aria-hidden="true">⌄</span></span></summary>
+  <aside class="discovery" aria-label="Filter deals">
+    <h2 class="discovery-title">Find your next stop</h2>
+    <p class="discovery-sub">Set your budget. Pick your usual.</p>
+    {{ filter_bar(filters, categories, price_caps) }}
+    <a class="week-link" href="{{ browse_url('week', start=day.isoformat()) }}">Plan the week <span aria-hidden="true">↗</span></a>
+  </aside>
+  </details>
+  <section class="directory-panel" data-content="places" aria-label="Places to explore">
+    <div class="directory-heading"><h2 id="directory-title">The neighborhood lineup</h2><span id="directory-count">{{ directory|length }} places</span></div>
+    <p class="directory-note" id="directory-note">Independent favorites and familiar stops.</p>
+    <div id="saved-empty" class="saved-empty" hidden><span aria-hidden="true">♡</span><h3>Keep the good ones.</h3><p>Tap a heart on any place to save it for another night.</p><button type="button" data-browse="places">Explore places ↗</button></div>
+    <ul class="place-directory">
+      {% for v in directory|sort(attribute='name') %}
+      <li class="place-card" data-place="{{ v.slug }}">
+        <div class="place-avatar{% if v.kind == 'restaurant' %} place-avatar--food{% endif %}" aria-hidden="true"><span>{{ v.name[0] }}</span><i>{{ '%02d' % loop.index }}</i></div>
+        <div class="place-body">
+          <span class="place-kind">{{ v.kind_label }}{% if v.latitude and v.longitude %} <span>· {% if v.latitude >= 39.138 %}Gaslight{% elif v.longitude >= -84.514 %}Short Vine{% else %}Clifton Heights{% endif %}</span>{% endif %}</span>
+          <a class="place-name" data-select-venue="{{ v.slug }}" href="{{ v.venue_url }}">{{ v.name }}</a>
+          <p class="place-address">{{ v.address or 'Address not confirmed' }}</p>
+          <div class="place-bottom">
+            <span class="place-offer{% if v.deal_count %} place-offer--available{% endif %}">{% if v.deal_count %}{% if v.has_samples %}Sample · {% endif %}{% if v.cheapest is not none %}from ${{ '%g' % v.cheapest }}{% else %}{{ v.deal_count }} specials{% endif %}{% else %}Explore this place{% endif %}</span>
+            <button type="button" class="place-add enhancement-only" data-plan-add="{{ v.slug }}" aria-label="Add {{ v.name }} to your night">+</button>
+          </div>
+        </div>
+        <button type="button" class="save-place enhancement-only" data-save-venue="{{ v.slug }}" aria-pressed="false" aria-label="Save {{ v.name }}">♡</button>
+      </li>
+      {% else %}<li class="directory-empty"><h3>No places found.</h3><p>Try another search or loosen your filters.</p><a href="{{ page_url(max='', cat='', q='', kind='') }}">Show all places ↗</a></li>{% endfor %}
+    </ul>
+  </section>
+  <div class="results" data-content="specials">
+  {% if total_before_filters or filters.active %}
+  <div class="results-toolbar">
+    <h2 class="results-title">The lineup</h2>
+  <div class="sortbar" role="group" aria-label="Sort deals">
+    {% if is_today %}
+      <a class="tab{% if sort == 'time' %} tab--on{% endif %}"{% if sort == 'time' %} aria-current="true"{% endif %} href="{{ page_url(sort='time') }}">Now</a>
+    {% endif %}
+    <a class="tab{% if sort == 'price' %} tab--on{% endif %}"{% if sort == 'price' %} aria-current="true"{% endif %} href="{{ page_url(sort='price') }}">Cheapest</a>
+    <a class="tab{% if sort == 'bar' %} tab--on{% endif %}"{% if sort == 'bar' %} aria-current="true"{% endif %} href="{{ page_url(sort='bar') }}">By bar</a>
+  </div>
+  </div>
+  {% endif %}
+
+{% if deals %}
+
+  {% if sort == 'time' and time_groups %}
+    {% for group in time_groups %}
+      <section class="timegroup timegroup--{{ group.key }}"
+               {%- if group.key == 'now' %} id="on-now"{% endif %}>
+        <h2 class="timegroup-head">
+          {{ group.title }}
+          <span class="timegroup-count">{{ group.deals|length }}</span>
+          {% if group.cheapest is not none %}
+            <span class="timegroup-from">from ${{ '%g' % group.cheapest }}</span>
+          {% endif %}
+          {% if group.urgent_count %}
+            <span class="timegroup-urgent">{{ group.urgent_count }} ending soon</span>
+          {% endif %}
+        </h2>
+        <ul class="deals">
+          {% for deal in group.deals %}
+            {{ deal_card(deal, muted=(group.key == 'over'),
+                         address=venue_address(deal.venue_slug)) }}
+          {% endfor %}
+        </ul>
+      </section>
+    {% endfor %}
+
+  {% elif sort == 'bar' %}
+    {% for v in venues %}
+      <section class="venue-block">
+        <h2 class="venue-head">
+          <a href="{{ url_for('venue', slug=v.venue_slug) }}">{{ v.venue_name }}</a>
+          {% if v.cheapest is not none %}<span class="venue-from">from ${{ '%g' % v.cheapest }}</span>{% endif %}
+        </h2>
+        <ul class="deals">
+          {% for deal in v.deals %}{{ deal_card(deal) }}{% endfor %}
+        </ul>
+      </section>
+    {% endfor %}
+
+  {% else %}
+    <ul class="deals">
+      {% for deal in deals %}
+        {{ deal_card(deal, address=venue_address(deal.venue_slug)) }}
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+{% else %}
+  <div class="empty">
+    {% if filters.active and total_before_filters %}
+      <p class="empty-title">Nothing matches those filters.</p>
+      <p class="muted">
+        There {{ 'is' if total_before_filters == 1 else 'are' }}
+        {{ total_before_filters }} deal{{ '' if total_before_filters == 1 else 's' }}
+        {% if is_today %}today{% else %}on this day{% endif %} without them.
+        <a href="{{ page_url(max='', cat='', q='', kind='') }}">Clear filters</a>
+      </p>
+    {% else %}
+      <p class="empty-title">No deals on record for {% if is_today %}today{% else %}this day{% endif %}.</p>
+      {% if total_posts == 0 %}
+        <p class="muted">No specials have been collected yet. Check back after the next update.</p>
+      {% else %}
+        <p class="muted">There are {{ total_deals }} specials on record, but none scheduled for this day.
+        <a href="{{ browse_url('week', start=day.isoformat()) }}">Explore the week</a>.</p>
+      {% endif %}
+    {% endif %}
+  </div>
+{% endif %}
+
+{% if uncertain %}
+  <section class="aside">
+    <h2 class="aside-head">Unconfirmed</h2>
+    <p class="aside-note">Some details were unclear. Check with the bar before making plans.</p>
+    <ul class="deals">
+      {% for deal in uncertain %}{{ deal_card(deal, unconfirmed=True) }}{% endfor %}
+    </ul>
+  </section>
+{% endif %}
+
+{% if undated %}
+  <section class="aside">
+    <h2 class="aside-head">Recently mentioned, no date given</h2>
+    <ul class="deals">
+      {% for deal in undated %}{{ deal_card(deal, unconfirmed=True) }}{% endfor %}
+    </ul>
+  </section>
+{% endif %}
+
+</div>
+</div>
+
+{% if not freshness.stale and freshness.known %}
+  <p class="updated muted small">Updated {{ freshness.label }}.</p>
+{% endif %}
+<p class="explorer-footnote">Specials can change. Check the source before you go.</p>
+</section>
+
+<section class="map-stage" aria-label="Interactive map of Clifton bars and restaurants">
+  <div id="neighborhood-map" aria-label="Map. Drag to move, use plus and minus to zoom, and select a bar marker." tabindex="0"></div>
+  <div class="map-heading" id="map-heading">
+    <p class="map-eyebrow"><span class="signal-dot"></span> CLIFTON, CINCINNATI</p>
+    <h2>A little closer<br>to your next stop.</h2>
+    <p id="map-gesture-hint">Drag to move · right-drag to rotate · scroll to zoom</p>
+  </div>
+  <nav class="map-neighborhoods" aria-label="Jump to a neighborhood">
+    <button type="button" data-map-area="short-vine" disabled>Short Vine <span aria-hidden="true">↗</span></button>
+    <button type="button" data-map-area="calhoun" disabled>Calhoun &amp; McMillan <span aria-hidden="true">↗</span></button>
+    <button type="button" data-map-area="gaslight" disabled>Ludlow &amp; Gaslight <span aria-hidden="true">↗</span></button>
+  </nav>
+  <div class="map-caption"><span class="map-caption-index">01 — 03</span><strong>Clifton &amp; the Gaslight District</strong><span>Good places. Just around the corner.</span></div>
+  <div class="map-toolbar" aria-label="Map controls">
+    <button id="toggle-3d" type="button" aria-pressed="true" disabled><span class="control-cube" aria-hidden="true">◇</span> 3D view</button>
+    <button id="fit-bars" type="button" disabled><span aria-hidden="true">⌖</span> All places</button>
+    <button id="reset-north" type="button" disabled title="Face north" aria-label="Face north"><span id="compass-needle" aria-hidden="true">↑</span> North</button>
+  </div>
+  <div class="map-plan-teaser enhancement-only"><span>Make a night of it.</span><button type="button" data-open-plan>Build your plan <span aria-hidden="true">↗</span></button></div>
+  <div class="camera-dock" aria-label="Camera navigation">
+    <div class="camera-buttons">
+      <div class="camera-mode" role="group" aria-label="Mouse drag action">
+        <button id="move-mode" type="button" aria-pressed="true" disabled>Move</button>
+        <button id="orbit-mode" type="button" aria-pressed="false" disabled>Rotate</button>
+      </div>
+      <span class="dock-divider" aria-hidden="true"></span>
+      <button id="zoom-out" type="button" disabled aria-label="Zoom out" title="Zoom out">−</button>
+      <button id="zoom-in" type="button" disabled aria-label="Zoom in" title="Zoom in">+</button>
+      <span class="dock-divider" aria-hidden="true"></span>
+      <button id="rotate-left" type="button" disabled aria-label="Rotate left" title="Rotate left">↶</button>
+      <button id="rotate-map" type="button" disabled aria-label="Rotate right" title="Rotate right">↷</button>
+    </div>
+    <label class="tilt-control" for="camera-tilt"><span>Tilt</span><input type="range" id="camera-tilt" min="0" max="75" value="50" step="1" disabled><output id="tilt-value" for="camera-tilt">50°</output></label>
+  </div>
+  <div class="map-loading" id="map-loading" role="status"><span class="loading-orbit" aria-hidden="true"></span><strong>Setting the scene</strong><span>Loading the neighborhood map…</span></div>
+  <div class="map-fallback" id="map-fallback" hidden role="status">
+    <span class="fallback-icon" aria-hidden="true">⌖</span>
+    <h2>The neighborhood is still here.</h2>
+    <p id="map-error-message">The map needs an internet connection and a browser with 3D graphics. Every deal is still available in the list.</p>
+    <button type="button" id="retry-map">Try the map again</button>
+    <a href="{{ page_url(view='list') }}" data-view="list">Browse the list instead →</a>
+  </div>
+  <noscript><div class="map-nojs">Enable JavaScript to explore the 3D map. The deal list and filters work without it.</div></noscript>
+  <div class="map-legend"><span><i class="legend-deal"></i> Special on this day</span><span><i class="legend-quiet"></i> Bar or restaurant</span></div>
+  <div class="map-context"><span id="mapped-count">{{ map_data.mapped_count }} places mapped</span></div>
+</section>
+  <section class="venue-drawer" id="venue-drawer" hidden aria-label="Selected place" tabindex="-1">
+    <button class="drawer-back" id="close-venue" type="button">← Back to exploring</button>
+    <div class="venue-stepper" aria-label="Browse places"><button id="previous-venue" type="button" aria-label="Previous place">←</button><span id="venue-position"></span><button id="next-venue" type="button" aria-label="Next place">→</button></div>
+    <p class="drawer-eyebrow" id="drawer-eyebrow">YOUR NEXT STOP</p>
+    <h2 id="drawer-name"></h2>
+    <p id="drawer-address"></p>
+    <div class="drawer-primary"><button type="button" id="drawer-add-plan">+ Add to my night</button><button type="button" id="drawer-save" aria-pressed="false" aria-label="Save this place">♡</button></div>
+    <div class="drawer-actions"><a id="drawer-directions" target="_blank" rel="noopener noreferrer">Directions ↗</a><a id="drawer-website" hidden target="_blank" rel="noopener noreferrer">Website / menu ↗</a><a id="drawer-week">Weekly specials →</a></div>
+    <p class="drawer-note" id="drawer-note"></p>
+    <ul class="deals" id="drawer-deals"></ul>
+  </section>
+  <aside class="night-plan-panel" id="night-plan-panel" hidden tabindex="-1" aria-label="Your night plan">
+    <div class="plan-topline"><span class="eyebrow">A good night, lined up</span><button type="button" id="close-plan" aria-label="Close night plan">×</button></div>
+    <h2>Your night.<br><em>Your way.</em></h2>
+    <p class="plan-description">Dinner first? One more stop? Add up to five places, then make it happen.</p>
+    <div id="plan-empty" class="plan-empty"><span aria-hidden="true">↗</span><h3>Leave room for a little adventure.</h3><p>Use the + on a place to add your first stop.</p><button type="button" id="plan-explore">Find a place</button></div>
+    <ol id="plan-stops" class="plan-stops"></ol>
+    <div class="plan-footer" id="plan-footer" hidden><a id="plan-directions" target="_blank" rel="noopener noreferrer">Walking directions ↗</a><p id="plan-route-note">Add another stop to get walking directions.</p><button type="button" id="clear-plan">Clear plan</button></div>
+    <p class="plan-local-note">Your saved places and plan stay in this browser.</p>
+  </aside>
+</div>
+<div class="explorer-toast" id="explorer-toast" hidden role="status"></div>
+<p class="sr-only" id="explorer-announcement" role="status" aria-live="polite"></p>
+{% endblock %}

@@ -1,0 +1,52 @@
+{
+  "username": "murphyspubcincy",
+  "saved_at": "2026-09-09T21:27:19.583763+00:00",
+  "synthetic": true,
+  "note": "Hand-authored fixture; not captured from Instagram.",
+  "posts": [
+    {
+      "shortcode": "FIXMURPH01",
+      "username": "murphyspubcincy",
+      "caption": "$2 domestics tonight! 🍻",
+      "posted_at": "2026-09-17T22:30:00+00:00",
+      "image_url": "https://example.invalid/FIXMURPH01.jpg",
+      "local_image_path": null,
+      "permalink": "https://www.instagram.com/p/FIXMURPH01/",
+      "is_video": false,
+      "typename": "GraphImage"
+    },
+    {
+      "shortcode": "FIXMURPH02",
+      "username": "murphyspubcincy",
+      "caption": "Every Thursday: half off wings",
+      "posted_at": "2026-09-14T22:30:00+00:00",
+      "image_url": "https://example.invalid/FIXMURPH02.jpg",
+      "local_image_path": null,
+      "permalink": "https://www.instagram.com/p/FIXMURPH02/",
+      "is_video": false,
+      "typename": "GraphImage"
+    },
+    {
+      "shortcode": "FIXMURPH03",
+      "username": "murphyspubcincy",
+      "caption": "Trivia at 8, $3 wells",
+      "posted_at": "2026-09-12T22:30:00+00:00",
+      "image_url": "https://example.invalid/FIXMURPH03.jpg",
+      "local_image_path": null,
+      "permalink": "https://www.instagram.com/p/FIXMURPH03/",
+      "is_video": false,
+      "typename": "GraphImage"
+    },
+    {
+      "shortcode": "FIXMURPH04",
+      "username": "murphyspubcincy",
+      "caption": "🍻 see you tonight",
+      "posted_at": "2026-09-11T22:30:00+00:00",
+      "image_url": "https://example.invalid/FIXMURPH04.jpg",
+      "local_image_path": null,
+      "permalink": "https://www.instagram.com/p/FIXMURPH04/",
+      "is_video": true,
+      "typename": "GraphVideo"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{# One deal card, shared by every view. #}
+{# `unconfirmed` marks a low-confidence extraction and earns the chip;
+   `muted` only dims the card (a deal whose window has already passed). #}
+{% macro deal_card(deal, unconfirmed=False, muted=False, show_when=True, address=None) %}
+  <li class="deal{% if unconfirmed or muted %} deal--dim{% endif %}
+             {%- if deal.timing and deal.timing.status == 'now' %} deal--live{% endif %}
+             {%- if deal.timing and deal.timing.status == 'over' %} deal--over{% endif %}
+             {%- if deal.timing and deal.timing.urgent %} deal--urgent{% endif %}" data-venue="{{ deal.venue_slug }}" data-deal-id="{{ deal.id }}">
+    <div class="deal-price">
+      {% if deal.price_label %}{{ deal.price_label }}{% else %}<span class="deal-price-na">deal</span>{% endif %}
+    </div>
+    <div class="deal-body">
+      <p class="deal-text">{{ deal.deal_text }}</p>
+
+      <p class="deal-meta">
+        <a class="deal-venue" href="{{ url_for('venue', slug=deal.venue_slug) }}">{{ deal.venue_name }}</a>
+        {% if address %}<a class="deal-addr" href="https://www.google.com/maps/search/?api=1&query={{ (address ~ ', Cincinnati, OH')|urlencode }}" target="_blank" rel="noopener noreferrer" aria-label="Map to {{ deal.venue_name }}">{{ address }} ↗</a>{% endif %}
+      </p>
+
+      <p class="deal-meta">
+        {% if deal.window %}<span class="deal-time">{{ deal.window }}</span>{% endif %}
+        {% if deal.timing and deal.timing.label %}
+          <span class="badge badge--{{ deal.timing.status }}"
+                {%- if deal.timing.ends_at %} data-ends-at="{{ deal.timing.ends_at }}"{% endif %}
+                {%- if deal.timing.starts_at %} data-starts-at="{{ deal.timing.starts_at }}"{% endif %}
+          >{{ deal.timing.label }}</span>
+        {% endif %}
+        {% if show_when and deal.recurrence in ('weekly', 'daily') %}
+          {% if deal.window %}<span class="dot">·</span>{% endif %}
+          <span class="muted">{{ deal.when }}</span>
+        {% endif %}
+      </p>
+
+      <p class="deal-foot">
+        <span class="chip chip--category">{{ deal.category|capitalize }}</span>
+        <span class="chip{% if deal.source_kind == 'website' %} chip--web{% endif %}">{{ deal.source_label }}</span>
+        {% if unconfirmed %}<span class="chip chip--warn">unconfirmed</span>{% endif %}
+        {% if deal.verify.kind == 'sample' %}<span class="chip chip--sample">sample</span>{% endif %}
+        {% if request.endpoint == 'index' %}<button class="show-on-map" type="button" data-select-venue="{{ deal.venue_slug }}" aria-label="Show {{ deal.venue_name }} on the map">Locate <span aria-hidden="true">↗</span></button>{% endif %}
+        {# Never render an anchor we know is a dead end. #}
+        {% if deal.verify.url %}
+          <a class="verify" href="{{ deal.verify.url }}" title="{{ deal.verify.title }}"
+             target="_blank" rel="noopener noreferrer">{{ deal.verify.label }}</a>
+        {% else %}
+          <span class="verify verify--none" title="{{ deal.verify.title }}">{{ deal.verify.label }}</span>
+        {% endif %}
+      </p>
+    </div>
+  </li>
+{% endmacro %}
+
+{# The price / category / search filter bar. #}
+{% macro filter_bar(filters, categories, price_caps) %}
+  <form class="filters" method="get" action="">
+    {# Preserve everything except the field being edited. #}
+    {% for key, value in request.args.items() %}
+      {% if key != 'q' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}
+    {% endfor %}
+    <div class="filter-row">
+      <input class="search" type="search" name="q" value="{{ filters.query }}"
+             placeholder="A place, a dish, a drink…" aria-label="Search deals">
+      <button class="btn" type="submit">Search</button>
+    </div>
+  </form>
+
+  <div class="filter-row filter-row--chips" role="group" aria-label="Maximum price">
+    <span class="filter-label">Max price</span>
+    {% for value, label in price_caps %}
+      {% set selected = (filters.max_price is not none and value and filters.max_price == value|float) or (filters.max_price is none and not value) %}
+      <a class="pill{% if selected %} pill--on{% endif %}"{% if selected %} aria-current="true"{% endif %}
+         href="{{ page_url(max=value) }}">{{ label }}</a>
+    {% endfor %}
+  </div>
+
+  <div class="filter-row filter-row--chips" role="group" aria-label="Category">
+    <span class="filter-label">Looking for</span>
+    {% for key, label in categories %}
+      <a class="pill{% if filters.category == key %} pill--on{% endif %}"{% if filters.category == key %} aria-current="true"{% endif %}
+         href="{{ page_url(cat=key) }}">{{ label }}</a>
+    {% endfor %}
+  </div>
+
+  {% if filters.active %}
+    <p class="filter-clear"><a href="{{ page_url(max='', cat='', q='', kind='') }}">Clear filters</a></p>
+  {% endif %}
+  {% if filters.max_price is not none %}
+    <p class="filter-hint">Up to ${{ '%g' % filters.max_price }}. Offers without a listed price are included.</p>
+  {% endif %}
+{% endmacro %}
